@@ -7,16 +7,16 @@ namespace CombinedSplitter
     class Combo
     {
         // Defines XML element paths as constant strings to be used in the Main method
-        private const string Xpath = "/ROW_Easement/File_Name";
-        private const string Xpath2 = "/ROW_Easement/tblDocument/VendorDocumentID";
-        private const string Xpath3 = "/ROW_Easement/tblPersonOfInterest/From/From_1/VendorNamesID";
-        private const string Xpath4 = "/ROW_Easement/tblTractMain/tblTractMain_1/VendorTractID";
-        private const string Doc = @"C:\Users\taylor.r\Documents\XMLs\SeparatedDocumentXMLs\Doc_";
-        private const string POI = @"C:\Users\taylor.r\Documents\XMLs\SeparatedPOIXMLs\POI_";
-        private const string Tract = @"C:\\Users\\taylor.r\\Documents\\XMLs\\SeparatedTractMainXMLs\\TractMain_";
-        private const string DocPath = @"C:\Users\taylor.r\Documents\XMLs\SeparatedDocumentXMLs\CombinedDOCS\";
-        private const string ComboPOI = @"C:\Users\taylor.r\Documents\XMLs\SeparatedPOIXMLs\CombinedPOI\";
-        private const string TractMain = @"C:\Users\taylor.r\Documents\XMLs\SeparatedTractMainXMLs\CombinedTractMain\";
+        private const string Xpath = "/Root/File_Name";
+        private const string Xpath2 = "/Root/Node_1/SubNode_1";
+        private const string Xpath3 = "/Root/Node_2/Child_2/Child_2_2/SubNode_2";
+        private const string Xpath4 = "/Root/Node_3/Child_3/SubNode_3";
+        private const string Node_1 = @"C:\"; // Destination for Node_1 XML file.
+        private const string Node_2 = @"C:\"; // Destination for Node_2 XML file.
+        private const string Node_3 = @"C:\"; // Destination for Node_3 XML file.
+        private const string ComboNode_1 = @"C:\"; // Destination for combined Node_1 XML files
+        private const string ComboNode_2 = @"C:\"; // Destination for combined Node_2 XML files
+        private const string ComboNode_3 = @"C:\"; // Destination for combined Node_3 XML files
 
         static void Main(string[] _1)
         {
@@ -44,37 +44,35 @@ namespace CombinedSplitter
                 //Saves the doc with changes
                 doc.Save(files);
 
-                // Allow user to specify which Doc they are working on
+                // Retrieves file name of original file within the XML; this was specific to my use case
                 string docNum = Path.GetFileName(files);
 
-                // Selects desired node, in this case, tblTractMain under the ROW_Easement Element
-                XmlNodeList nodeList = doc.SelectNodes("/ROW_Easement/tblDocument");
+                // Selects desired node, in this case, Node_1 under the Root Element
+                XmlNodeList nodeList = doc.SelectNodes("/Root/Node_1");
 
                 // Traverses the elements within the node selected above and applies the code within to each element.
                 foreach (XmlNode node in nodeList)
                 {
                     // Outputs Node Selection to xml using XmlTextWriter
-                    using (XmlTextWriter writer = new XmlTextWriter(filename: Doc + root.InnerText + ".xml", null))
+                    using (XmlTextWriter writer = new XmlTextWriter(filename: Node_1 + root.InnerText + ".xml", null))
                     {
-                        //var docTree = new XElement("Root");
-                        //docTree.Add(writer);
                         writer.Formatting = Formatting.Indented;
                         node.WriteTo(writer);
                     }
                 }
-                // Had to Create a new element for tblPersonOfInterest to be under so that it would
-                // select the entire tblPersonOfInterest node and not the fragment within.
-                XmlElement rootNew = doc.CreateElement("poiRoot");
+                // Had to Create a new element for Node_2 to be under so that it would
+                // select the entire Node_2 and not the fragment within.
+                XmlElement rootNew = doc.CreateElement("NewRootForNode_2");
 
-                // Selects desired node, in this case, tblTractMain under the ROW_Easement Element
-                XmlNodeList nodeList2 = doc.SelectNodes("descendant::tblPersonOfInterest");
+                // Selects desired node, in this case, Node_2 under the Root Element
+                XmlNodeList nodeList2 = doc.SelectNodes("descendant::Node_2");
                 // Traverses the elements within the node selected above and applies the code within to each element.
                 foreach (XmlNode node2 in nodeList2)
                 {
-                    // Appending the tblPersonOfInterest node to the rootNew node we created
+                    // Appending the Node_2 node to the rootNew element we created
                     rootNew.AppendChild(node2);
                     // Outputs Node Selection to xml using XmlTextWriter
-                    using (XmlTextWriter writer2 = new XmlTextWriter(filename: POI + root.InnerText + ".xml", null))
+                    using (XmlTextWriter writer2 = new XmlTextWriter(filename: Node_2 + root.InnerText + ".xml", null))
                     {
 
                         writer2.Formatting = Formatting.Indented;
@@ -82,53 +80,54 @@ namespace CombinedSplitter
                     }
                 }
 
-                // Selects desired node, in this case, tblTractMain under the ROW_Easement Element
-                XmlNodeList nodeList3 = doc.SelectNodes("/ROW_Easement/tblTractMain");
+                // Selects desired node, in this case, Node_3 under the Root Element
+                XmlNodeList nodeList3 = doc.SelectNodes("/Root/Node_3");
 
                 // Traverses the elements within the node selected above and applies the code within to each element.
                 foreach (XmlNode node3 in nodeList3)
                 {
                     // Outputs Node Selection to xml using XmlTextWriter
-                    using (XmlTextWriter writer3 = new XmlTextWriter(filename: Tract + root.InnerText + ".xml", null))
+                    using (XmlTextWriter writer3 = new XmlTextWriter(filename: Node_3 + root.InnerText + ".xml", null))
                     {
                         writer3.Formatting = Formatting.Indented;
                         node3.WriteContentTo(writer3);
                     }
                 }
             }
+            
             // Now to combine them into a new folder in each split folder
-            using (var combinedOutput = File.Create(ComboPOI + "CombinedPOIs.xml"))
+            using (var combinedOutputNodeTwo = File.Create(ComboNode_2 + "CombinedNode_2.xml"))
             {
-                foreach (var poiFiles in System.IO.Directory.GetFiles("C:\\Users\\taylor.r\\Documents\\XMLs\\SeparatedPOIXMLs"))
+                foreach (var nodeTwoFiles in System.IO.Directory.GetFiles("C:\ /*location of separated Node_2 files*/ "))
                 {
 
-                    using (var input = File.OpenRead(poiFiles))
+                    using (var input = File.OpenRead(nodeTwoFiles))
                     {
-                        input.CopyTo(combinedOutput);
+                        input.CopyTo(combinedOutputNodeTwo);
                     }
 
                 }
             }
-            using (var combinedOutputDoc = File.Create(DocPath + "CombinedDocs.xml"))
+            using (var combinedOutputNodeOne = File.Create(ComboNode_1 + "CombinedNode_1.xml"))
             {
-                foreach (var docFiles in System.IO.Directory.GetFiles("C:\\Users\\taylor.r\\Documents\\XMLs\\SeparatedDocumentXMLs"))
+                foreach (var nodeOneFiles in System.IO.Directory.GetFiles("C:\ /*location of separated Node_1 files*/ "))
                 {
 
-                    using (var input = File.OpenRead(docFiles))
+                    using (var input = File.OpenRead(nodeOneFiles))
                     {
-                        input.CopyTo(combinedOutputDoc);
+                        input.CopyTo(combinedOutputNodeOne);
                     }
 
                 }
             }
-            using (var combinedOutputTractMain = File.Create(TractMain + "CombinedTracts.xml"))
+            using (var combinedOutputNodeThree = File.Create(ComboNode_3 + "CombinedNode_3.xml"))
             {
-                foreach (var tractFiles in System.IO.Directory.GetFiles("C:\\Users\\taylor.r\\Documents\\XMLs\\SeparatedTractMainXMLs"))
+                foreach (var nodeThreeFiles in System.IO.Directory.GetFiles("C:\ /*location of separated Node_3 files*/ "))
                 {
 
-                    using (var input = File.OpenRead(tractFiles))
+                    using (var input = File.OpenRead(nodeThreeFiles))
                     {
-                        input.CopyTo(combinedOutputTractMain);
+                        input.CopyTo(combinedOutputNodeThree);
                     }
 
                 }
